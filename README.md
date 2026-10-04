@@ -1,71 +1,123 @@
-# SkillBridge AI
+# Process Scheduler
 
-A Flask + SQLite backend and React + Vite frontend connecting student skills to industry opportunities. Phase 3 provides deterministic scoring. The optional local Ollama layer explains results without changing scores.
+A browser-based CPU scheduling simulator built for an Operating Systems course project. Enter a workload, compare nine scheduling algorithms, and explore how each algorithm affects process execution and waiting time.
+
+[Open the website](https://stackvarun.github.io/process-scheduler/)
+
+## Features
+
+- Simulate nine CPU scheduling algorithms using the same process inputs.
+- View a Gantt chart with process execution intervals and CPU idle periods.
+- Calculate completion, turnaround, waiting, and response times, with totals and averages.
+- Compare average waiting, turnaround, and response times across algorithms.
+- Explore execution with play/pause, playback speeds, a clock slider, and step controls.
+- Inspect each process's status, executed time, remaining burst time, and waiting time during playback.
+- Export results to CSV or use the browser's print dialog to save a PDF.
+- Use a responsive interface with input validation and an algorithm FAQ.
+
+## Supported algorithms
+
+| Algorithm | Scheduling policy |
+| --- | --- |
+| First Come, First Served (FCFS) | Non-preemptive; runs processes in arrival order. |
+| Shortest Job First (SJF) | Non-preemptive; selects the shortest available burst. |
+| Shortest Remaining Time First (SRTF) | Preemptive; selects the shortest remaining burst. |
+| Priority — Non-Preemptive | Runs the highest-priority available process to completion. |
+| Priority — Preemptive | A newly available process with a higher priority can interrupt execution. |
+| Round Robin (RR) | Uses a FIFO ready queue and a configurable time quantum. |
+| Highest Response Ratio Next (HRRN) | Non-preemptive; selects the highest ratio of (waiting time + burst time) / burst time. |
+| Multilevel Queue (MLQ) | Two fixed queues: Q0 uses Round Robin; Q1 uses FCFS. Q0 has strict priority. |
+| Multilevel Feedback Queue (MLFQ) | Three queues: Q0 uses RR with quantum q, Q1 uses RR with quantum 2q, and Q2 uses FCFS. Processes move down after using their allowance. |
+
+A smaller priority number means a higher priority. In MLQ and MLFQ, a ready process in a higher queue can interrupt a process in a lower queue. MLFQ starts every process in Q0 and does not implement aging or periodic priority boosts.
+
+## Technology stack
+
+| Component | Technology |
+| --- | --- |
+| Page structure | HTML5 |
+| Layout and responsive styling | CSS3, Flexbox, Grid, and media queries |
+| Scheduling logic and interface | Vanilla JavaScript |
+| Gantt chart | HTML elements styled with CSS |
+| Hosting | GitHub Pages |
+| Algorithm tests | JavaScript, run with Node.js |
+
+The application runs entirely in the browser. It requires no backend, database, external JavaScript libraries, or build step.
 
 ## Run locally
 
-1. `cd backend && python -m pip install -r requirements.txt`
-2. Copy `backend/.env.example` to `backend/.env`; set strong `SECRET_KEY` and `JWT_SECRET_KEY`. The default database is `database/skillbridge.db`.
-3. From `backend/`: `python -m flask --app run.py db upgrade`, then `python seed_reference_data.py` if role/skill catalogs are empty.
-4. Optional demo: `DEMO_PASSWORD='choose-a-local-demo-password' python seed_demo.py --reset-passwords`. It creates the four demo role logins and reuses the five `student1@test.com` through `student5@test.com` accounts, adding missing skill/portfolio data and submitting their applications. The reset flag updates only these named demo/test accounts. Existing portfolios, job requirements, owners and application statuses are preserved.
-5. From `backend/`: `python run.py`.
-6. From `frontend/`: `npm install && npm run dev`. Open `http://localhost:5173`.
+Clone the repository:
 
-The Vite development server proxies `/api` to Flask on port 5001 by default and follows `PORT` from the root/backend `.env`. Use `API_PROXY_TARGET` in the frontend environment for an explicit override. On macOS, port 5000 may be occupied by AirPlay; use port 5001 and restart both servers. Keep `VITE_API_BASE_URL=/api` for local development. For a separate frontend deployment, set `VITE_API_BASE_URL` to the full API URL and configure `CORS_ORIGINS` on the backend. The Ollama runtime is optional; see `backend/README.md` for local AI configuration and resume support.
+```bash
+git clone https://github.com/StackVarun/process-scheduler.git
+cd process-scheduler
+```
 
-Institution accounts are provisioned locally with `INSTITUTION_EMAIL=... INSTITUTION_PASSWORD=... INSTITUTION_NAME=... python provision_institution.py` from `backend/`; public registration allows student, industry and academician accounts. Institution reports are scoped to the provisioned institution name.
+Start a local server with Python 3:
 
-## Architecture and API
+```bash
+python3 -m http.server 8000
+```
 
-`frontend/src/services/api.js` → Flask routes → validation / services → SQLAlchemy models → SQLite. Candidate scores call the original `SkillIntelligenceService.analyze_role` using a posting's skill requirements. No generated text sets numeric scores.
+Open [http://localhost:8000](http://localhost:8000) in a browser. Press Ctrl+C in the terminal to stop the server.
 
-| Role | Main endpoints |
+Python is only needed for this local server; it is not part of the application's scheduling logic.
+
+## How to use
+
+1. Set the number of processes and fill in their arrival and burst times.
+2. Set priorities for priority scheduling and queue assignments for MLQ.
+3. Choose a time quantum for Round Robin and the multilevel algorithms.
+4. Run the simulation and inspect the process results and execution timeline.
+5. Click another algorithm in the comparison section to view its results using the same workload.
+6. Use playback controls to explore execution, or export the selected results.
+
+The simulator accepts up to 30 processes. Arrival times must be integers from 0 to 10,000; burst times, priorities, and the time quantum must be integers from 1 to 10,000. Process IDs must be unique.
+
+## Scheduling metrics
+
+| Metric | Meaning / calculation |
 | --- | --- |
-| Student | `GET /api/opportunities`, `POST /api/opportunities/:id/apply`, `GET /api/applications/mine`, `GET /api/passport/me` |
-| Industry | `GET/PUT /api/industry/company`, `GET/POST /api/opportunities`, `GET/PUT/DELETE /api/opportunities/:id`, `GET /api/opportunities/:id/applications`, `POST /api/applications/:id/shortlist`, `GET /api/industry/summary` |
-| Academician | `GET/PUT /api/faculty/profile`, `GET/POST /api/faculty/opportunities`, `GET /api/faculty/applications/mine`, `POST /api/faculty/opportunities/:id/apply` |
-| Institution | `GET /api/institution/analytics` (aggregate, scoped to its registered institution) |
+| Completion Time (CT) | Clock time when a process finishes. |
+| Turnaround Time (TAT) | Completion time − arrival time. |
+| Waiting Time (WT) | Turnaround time − burst time. |
+| Response Time (RT) | First execution time − arrival time. |
+| Average time | Sum of the corresponding process values ÷ number of processes. |
+| CPU utilization | Total burst time ÷ simulation duration × 100. |
+| Throughput | Number of completed processes ÷ simulation duration. |
 
-Existing auth, profile, assessment, skill, portfolio, role matching and AI endpoints remain documented in `backend/README.md`. Faculty posting and application management also have owner scoped PUT/DELETE, applicant listing and shortlist endpoints in `faculty_routes.py`.
+The interface also reports CPU idle time and context switches. Context switches count direct transitions between different running processes; initial dispatch and transitions through idle time are excluded.
 
-## Demo flow
+## Project files
 
-Run the demo seed → sign in as the owning industry account printed by the script → click **View applicants** → compare five students ranked by weighted skill score, inspect their targets/gaps and portfolio evidence, then shortlist. Sign in as faculty to inspect the FDP opportunity or as institution to inspect aggregate gaps and demand. Add resume and assessment data through the student workspace to demonstrate the full phase 1–4 flow.
+| File | Purpose |
+| --- | --- |
+| [index.html](index.html) | Page structure, input controls, results sections, and FAQ. |
+| [styles.css](styles.css) | Interface styling, responsive layouts, and print formatting. |
+| [app.js](app.js) | Input handling, result rendering, algorithm selection, playback, and exports. |
+| [scheduler.js](scheduler.js) | Scheduling algorithms, validation, metric calculations, and playback state. |
+| [scheduler.test.js](scheduler.test.js) | Automated checks for scheduling behavior and calculated results. |
+| [DEMO_GUIDE.md](DEMO_GUIDE.md) | Reference material for understanding and demonstrating the project. |
 
-## Verification
+## Run the algorithm tests
 
-From `backend/`: `python -m pytest -q`. From `frontend/`: `npm test && npm run build`. Run `python -m flask --app run.py db upgrade` for the database migration.
+With Node.js installed, run:
 
-## Limits
+```bash
+node scheduler.test.js
+```
 
-The demo seeds a small data set. Placement readiness is the mean of available student to role matches, and industry demand sums posting weights. These are descriptive aggregates, not a predictive hiring model. Publicly self-registered industry/academician accounts are unverified; use trusted demo users only. The role dashboards use the project's existing CSS and native charts; Tailwind, shadcn/ui and Recharts are not dependencies in the supplied codebase.
+Node.js is needed for this test command, not for using the website.
 
-## Existing posting and login troubleshooting
+## Simulation assumptions and display limits
 
-The seed automatically uses the only open job. If there are several jobs, or you
-want a specific internship, run `DEMO_PASSWORD='your-demo-password' python
-seed_demo.py --reset-passwords --opportunity-id 9` from `backend/` (replace 9 with
-the actual posting ID). If no job exists it creates a Backend Engineer demo job.
-Existing posting ownership is preserved; only its owner can review applicants.
-The script prints that owner's email. `student@demo.skillbridge` is an additional
-student login for manual exploration; the five applicants use the numbered test
-accounts. Missing portfolio entries are synthetic and labelled self reported,
-never verified credentials. Existing student skills are not overwritten, so
-rankings depend on the actual database data. Repeating the seed does not duplicate
-applications or reset hiring decisions.
+- One CPU and one CPU burst per process; no I/O blocking is simulated.
+- Time values use abstract integer units.
+- Context switches have zero time overhead.
+- Ties generally use arrival order, then input order. Equal-priority arrivals do not interrupt the currently running process in preemptive priority scheduling.
+- Round Robin admits processes arriving at a time-slice boundary before requeueing the current process.
+- Consecutive execution intervals for the same process are merged in the displayed timeline.
+- The on-screen timeline displays up to 400 segments at once; its window follows playback.
+- Printed reports include up to 100 timeline segments. CSV exports include the complete execution timeline.
+- Gantt bars have a minimum display width for readability; use their time labels for exact durations.
 
-A wrong password returns a JSON 401 from Flask. A plain 403 at login can indicate
-a different server responding at the proxy target. Check `http://localhost:5001/health`
-for `SkillBridge AI API`, then confirm the browser is using the same backend.
-The starter `.env.example` leaves DATABASE_URL unset, so migrations, seeding and
-Flask use `database/skillbridge.db`. If you already set DATABASE_URL, keep that
-same database for all three commands; relative SQLite URLs resolve under Flask's
-instance directory. Do not switch databases while trying to recover local data.
-
-## Faculty support and student project editing
-
-Students can edit projects in Portfolio and track faculty feedback or assigned
-work in Mentorship & reviews. Faculty have a review inbox, student skill-gap
-inspection, mentorship allocation, project supervision and current placement
-counts. Apply the database migration before starting the updated application.
-See [FACULTY_FEATURES.md](FACULTY_FEATURES.md) for setup, behavior and API details.
