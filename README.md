@@ -140,4 +140,11 @@ These are planned improvements, not completed features.
 
 ## Credits
 
-The original team project was developed by **Varun, Pranay and Ananya**. This personal continuation preserves that team foundation and commit history.
+Originally developed for Code2Web BUILD_A_THON at SRM Ramapuram by:
+
+- [Varun](https://github.com/StackVarun)
+- [Pranay](https://github.com/dsvgpranay-alt)
+- [Ananya](https://github.com/AnanyaNM2008)
+
+This repository continues as my personal development version,
+preserving the original team foundation and commit history.
