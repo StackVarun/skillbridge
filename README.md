@@ -1,123 +1,143 @@
-# Process Scheduler
+# SkillBridge
 
-A browser-based CPU scheduling simulator built for an Operating Systems course project. Enter a workload, compare nine scheduling algorithms, and explore how each algorithm affects process execution and waiting time.
+An academia–industry collaboration portal for student skill profiles, portfolio evidence, opportunity matching and faculty support.
 
-[Open the website](https://stackvarun.github.io/process-scheduler/)
+Originally developed by **Varun, Pranay and Ananya** for **Code2Web BUILD_A_THON at SRM Ramapuram**, this repository continues from the shared team checkpoint as Varun's personal development version. The prototype was developed with AI assistance.
+
+## Project status
+
+Personal development starts from team checkpoint `f320478`. This is a student prototype under active development.
+
+**Personal deployment:** not yet available. A separate deployment will be linked here when ready.
+
+The existing shared team demo runs from a separate repository and deployment branch. Changes in this repository do not automatically update that demo.
 
 ## Features
 
-- Simulate nine CPU scheduling algorithms using the same process inputs.
-- View a Gantt chart with process execution intervals and CPU idle periods.
-- Calculate completion, turnaround, waiting, and response times, with totals and averages.
-- Compare average waiting, turnaround, and response times across algorithms.
-- Explore execution with play/pause, playback speeds, a clock slider, and step controls.
-- Inspect each process's status, executed time, remaining burst time, and waiting time during playback.
-- Export results to CSV or use the browser's print dialog to save a PDF.
-- Use a responsive interface with input validation and an algorithm FAQ.
-
-## Supported algorithms
-
-| Algorithm | Scheduling policy |
+| Workspace | Capabilities |
 | --- | --- |
-| First Come, First Served (FCFS) | Non-preemptive; runs processes in arrival order. |
-| Shortest Job First (SJF) | Non-preemptive; selects the shortest available burst. |
-| Shortest Remaining Time First (SRTF) | Preemptive; selects the shortest remaining burst. |
-| Priority — Non-Preemptive | Runs the highest-priority available process to completion. |
-| Priority — Preemptive | A newly available process with a higher priority can interrupt execution. |
-| Round Robin (RR) | Uses a FIFO ready queue and a configurable time quantum. |
-| Highest Response Ratio Next (HRRN) | Non-preemptive; selects the highest ratio of (waiting time + burst time) / burst time. |
-| Multilevel Queue (MLQ) | Two fixed queues: Q0 uses Round Robin; Q1 uses FCFS. Q0 has strict priority. |
-| Multilevel Feedback Queue (MLFQ) | Three queues: Q0 uses RR with quantum q, Q1 uses RR with quantum 2q, and Q2 uses FCFS. Processes move down after using their allowance. |
+| Student | Skill assessments, skill passport, projects and certifications, opportunity applications, faculty feedback and mentorship tasks |
+| Industry | Company profile, job and internship postings, required skills and weights, applicant skill matches and gaps, shortlisting |
+| Faculty | Development opportunities, project reviews, evidence verification, student skill-gap inspection and mentorship allocation |
+| Institution | Aggregate skill-gap and industry-demand reports, placement readiness summaries and evidence auditing |
 
-A smaller priority number means a higher priority. In MLQ and MLFQ, a ready process in a higher queue can interrupt a process in a lower queue. MLFQ starts every process in Q0 and does not implement aging or periodic priority boosts.
+Feature details are documented in [backend/README.md](backend/README.md) and [FACULTY_FEATURES.md](FACULTY_FEATURES.md).
 
-## Technology stack
+## How matching and AI work
 
-| Component | Technology |
+Skill and opportunity matching uses deterministic scoring based on skill requirements, weights and available evidence. These scores are descriptive matches, not predictions of hiring outcomes.
+
+An optional **local Ollama** integration can explain results without changing numeric scores. It requires a separately running local model and is not required for the core application. AI-generated explanations are not verified as available in the shared hosted demo.
+
+## Tech stack
+
+| Layer | Technologies |
 | --- | --- |
-| Page structure | HTML5 |
-| Layout and responsive styling | CSS3, Flexbox, Grid, and media queries |
-| Scheduling logic and interface | Vanilla JavaScript |
-| Gantt chart | HTML elements styled with CSS |
-| Hosting | GitHub Pages |
-| Algorithm tests | JavaScript, run with Node.js |
+| Frontend | React, Vite, JavaScript, React Router and CSS |
+| Backend | Python, Flask, SQLAlchemy, Flask-Migrate and JWT authentication |
+| Database | SQLite for default local development; PostgreSQL through `DATABASE_URL` for hosted deployments |
+| Testing | pytest, Vitest and React Testing Library |
+| Optional AI | Ollama with a locally installed model |
 
-The application runs entirely in the browser. It requires no backend, database, external JavaScript libraries, or build step.
+The shared team deployment uses Render for the frontend and backend, and Neon PostgreSQL for its database.
 
 ## Run locally
 
-Clone the repository:
+Install Python 3, Node.js and npm before starting. Use a Python version compatible with the dependencies in `backend/requirements.txt`.
+
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/StackVarun/process-scheduler.git
-cd process-scheduler
+git clone https://github.com/StackVarun/skillbridge.git
+cd skillbridge
 ```
 
-Start a local server with Python 3:
+### 2. Set up the backend
 
 ```bash
-python3 -m http.server 8000
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+cp .env.example .env
 ```
 
-Open [http://localhost:8000](http://localhost:8000) in a browser. Press Ctrl+C in the terminal to stop the server.
+On Windows, activate the virtual environment with `.venv\Scripts\activate` instead.
 
-Python is only needed for this local server; it is not part of the application's scheduling logic.
-
-## How to use
-
-1. Set the number of processes and fill in their arrival and burst times.
-2. Set priorities for priority scheduling and queue assignments for MLQ.
-3. Choose a time quantum for Round Robin and the multilevel algorithms.
-4. Run the simulation and inspect the process results and execution timeline.
-5. Click another algorithm in the comparison section to view its results using the same workload.
-6. Use playback controls to explore execution, or export the selected results.
-
-The simulator accepts up to 30 processes. Arrival times must be integers from 0 to 10,000; burst times, priorities, and the time quantum must be integers from 1 to 10,000. Process IDs must be unique.
-
-## Scheduling metrics
-
-| Metric | Meaning / calculation |
-| --- | --- |
-| Completion Time (CT) | Clock time when a process finishes. |
-| Turnaround Time (TAT) | Completion time − arrival time. |
-| Waiting Time (WT) | Turnaround time − burst time. |
-| Response Time (RT) | First execution time − arrival time. |
-| Average time | Sum of the corresponding process values ÷ number of processes. |
-| CPU utilization | Total burst time ÷ simulation duration × 100. |
-| Throughput | Number of completed processes ÷ simulation duration. |
-
-The interface also reports CPU idle time and context switches. Context switches count direct transitions between different running processes; initial dispatch and transitions through idle time are excluded.
-
-## Project files
-
-| File | Purpose |
-| --- | --- |
-| [index.html](index.html) | Page structure, input controls, results sections, and FAQ. |
-| [styles.css](styles.css) | Interface styling, responsive layouts, and print formatting. |
-| [app.js](app.js) | Input handling, result rendering, algorithm selection, playback, and exports. |
-| [scheduler.js](scheduler.js) | Scheduling algorithms, validation, metric calculations, and playback state. |
-| [scheduler.test.js](scheduler.test.js) | Automated checks for scheduling behavior and calculated results. |
-| [DEMO_GUIDE.md](DEMO_GUIDE.md) | Reference material for understanding and demonstrating the project. |
-
-## Run the algorithm tests
-
-With Node.js installed, run:
+Edit `backend/.env` and replace `SECRET_KEY` and `JWT_SECRET_KEY` with separate secret values. Leave `DATABASE_URL` unset to use the local `database/skillbridge.db`. Use the same database configuration for migrations, seeds and the running server.
 
 ```bash
-node scheduler.test.js
+python -m flask --app run.py db upgrade
+python seed_reference_data.py
+python run.py
 ```
 
-Node.js is needed for this test command, not for using the website.
+The backend runs on `http://localhost:5001` by default. Its health endpoint is `http://localhost:5001/health`.
 
-## Simulation assumptions and display limits
+### 3. Start the frontend
 
-- One CPU and one CPU burst per process; no I/O blocking is simulated.
-- Time values use abstract integer units.
-- Context switches have zero time overhead.
-- Ties generally use arrival order, then input order. Equal-priority arrivals do not interrupt the currently running process in preemptive priority scheduling.
-- Round Robin admits processes arriving at a time-slice boundary before requeueing the current process.
-- Consecutive execution intervals for the same process are merged in the displayed timeline.
-- The on-screen timeline displays up to 400 segments at once; its window follows playback.
-- Printed reports include up to 100 timeline segments. CSV exports include the complete execution timeline.
-- Gantt bars have a minimum display width for readability; use their time labels for exact durations.
+Open a second terminal from the repository root:
 
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open the URL printed by Vite, normally `http://localhost:5173`. The development server proxies `/api` to the local backend. Keep `VITE_API_BASE_URL=/api` for local development; if you use another backend port, configure `API_PROXY_TARGET` accordingly.
+
+### Optional demo data
+
+From `backend/`, with the virtual environment active:
+
+```bash
+DEMO_PASSWORD='choose-a-local-demo-password' python seed_demo.py
+```
+
+The script seeds demo role accounts and synthetic portfolio/application data. Read its output for account details and posting ownership. Run it against a development database; it is not part of normal server startup. See [backend/README.md](backend/README.md) for institution account provisioning and optional AI configuration.
+
+## Project structure
+
+- `frontend/` — React pages, routing, API client and frontend tests
+- `backend/` — Flask application, models, routes, services, migrations and tests
+- `database/` — default local SQLite database
+- `FACULTY_FEATURES.md` — faculty support setup and behavior
+
+## Validation commands
+
+Backend, with its virtual environment active:
+
+```bash
+cd backend
+python -m pytest -q
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm test
+npm run build
+```
+
+These are the project's validation commands; this README update does not claim a new successful test run.
+
+## Development direction
+
+- Improve the usability of each role's workspace.
+- Refine application tracking and opportunity discovery.
+- Improve validation, error handling and test coverage.
+- Configure a separate deployment for this personal version.
+
+These are planned improvements, not completed features.
+
+## Prototype limitations
+
+- Demo portfolios and applications are synthetic; self-reported evidence is not a verified credential.
+- Self-registered industry and faculty accounts are not independently verified.
+- Placement readiness and demand reports summarize available data; they are not predictive hiring models.
+- The optional local AI runtime needs separate setup and hosting to work outside local development.
+
+## Credits
+
+The original team project was developed by **Varun, Pranay and Ananya**. This personal continuation preserves that team foundation and commit history.
